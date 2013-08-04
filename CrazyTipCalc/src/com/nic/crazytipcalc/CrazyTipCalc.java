@@ -2,15 +2,22 @@ package com.nic.crazytipcalc;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Menu;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.Chronometer;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.Spinner;
@@ -193,7 +200,198 @@ public class CrazyTipCalc extends Activity {
 		}
 		
 	};
+	
+	private void setUpIntroCheckBoxes(){
+		
+		friendlyCheckBox.setOnCheckedChangeListener(new CheckBox.OnCheckedChangeListener() {
 
+			@Override
+			public void onCheckedChanged(CompoundButton arg0, boolean arg1) {
+
+				checklistValues[0] = (friendlyCheckBox.isChecked())?4:0;
+				
+				setTipFromWaitressCheckList();
+				
+				updateTipAndFinalBill();
+				
+			}
+			
+		});
+		
+	
+	
+		specialsCheckBox.setOnCheckedChangeListener(new CheckBox.OnCheckedChangeListener() {
+
+			@Override
+			public void onCheckedChanged(CompoundButton arg0, boolean arg1) {
+
+				checklistValues[1] = (specialsCheckBox.isChecked())?1:0;
+
+				setTipFromWaitressCheckList();
+
+				updateTipAndFinalBill();
+
+			}
+
+		});
+		
+		
+		opinionCheckBox.setOnCheckedChangeListener(new CheckBox.OnCheckedChangeListener() {
+
+			@Override
+			public void onCheckedChanged(CompoundButton arg0, boolean arg1) {
+
+				checklistValues[2] = (opinionCheckBox.isChecked())?2:0;
+
+				setTipFromWaitressCheckList();
+
+				updateTipAndFinalBill();
+
+			}
+
+		});
+	
+	}
+	
+	
+	
+	private void addChangeListenerToRadios(){
+		
+		availableRadioGroup.setOnCheckedChangeListener(new OnCheckedChangeListener(){
+
+			@Override
+			public void onCheckedChanged(RadioGroup arg0, int arg1) {
+
+				checklistValues[3] = (availableBadRadio.isChecked())?-1:0;
+				checklistValues[4] = (availableOKRadio.isChecked())?2:0;
+				checklistValues[5] = (availableGoodRadio.isChecked())?4:0;
+				
+				setTipFromWaitressCheckList();
+
+				updateTipAndFinalBill();
+				
+			}
+			
+		});
+		
+	}
+
+	private void setTipFromWaitressCheckList(){
+		
+		int checkListTotal = 0;
+		
+		for (int item : checklistValues){
+			
+			checkListTotal += item;
+			
+		}
+		
+		tipAmountET.setText(String.format("%.02f", checkListTotal * 0.1));
+		
+	}
+	
+	private void addItemSelectedListenerToSpinner(){
+		
+		problemsSpinner.setOnItemSelectedListener(new OnItemSelectedListener(){
+
+			@Override
+			public void onItemSelected(AdapterView<?> arg0, View arg1,
+					int arg2, long arg3) {
+
+				checklistValues[6] = (problemsSpinner.getSelectedItem().equals("Bad"))?-1:0;
+				checklistValues[7] = (problemsSpinner.getSelectedItem().equals("OK"))?3:0;
+				checklistValues[8] = (problemsSpinner.getSelectedItem().equals("Good"))?6:0;
+				
+				setTipFromWaitressCheckList();
+
+				updateTipAndFinalBill();
+				
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+		});
+		
+	}
+	
+	private void setButtonOnClickListeners(){
+		
+		startChronometerButton.setOnClickListener(new OnClickListener(){
+
+			@Override
+			public void onClick(View arg0) {
+
+				int stoppedMilliseconds = 0;
+				
+				String chronoText = timeWaitingChronometer.getText().toString();
+				String array[] = chronoText.split(":");
+				
+				if (array.length == 2){
+					
+					stoppedMilliseconds = Integer.parseInt(array[0]) *60*1000 +
+							Integer.parseInt(array[1]) * 1000;
+					
+				} else if (array.length == 3) {
+					
+					stoppedMilliseconds = Integer.parseInt(array[0]) * 60 * 60 * 1000 +
+							Integer.parseInt(array[1]) * 60 * 1000 + 
+							Integer.parseInt(array[2]) * 1000;
+					
+				}
+				
+				timeWaitingChronometer.setBase(SystemClock.elapsedRealtime() - stoppedMilliseconds);
+				
+				secondsYouWaited = Long.parseLong(array[1]);
+				
+				updateTipBasedOnTimeWaited(secondsYouWaited);
+				
+				timeWaitingChronometer.start();
+				
+			}
+			
+		});
+		
+		pauseChronometerButton.setOnClickListener(new OnClickListener(){
+
+			@Override
+			public void onClick(View v) {
+
+				timeWaitingChronometer.stop();
+				
+			}
+			
+		});
+		
+		resetChronometerButton.setOnClickListener(new OnClickListener(){
+
+			@Override
+			public void onClick(View v) {
+
+				timeWaitingChronometer.setBase(SystemClock.elapsedRealtime());
+				
+				secondsYouWaited = 0;
+				
+			}
+			
+		});
+		
+	}
+	
+	private void updateTipBasedOnTimeWaited(long secondsYouWaited){
+		
+		checklistValues[9] = (secondsYouWaited > 10)?-2:2;
+		
+		setTipFromWaitressCheckList();
+
+		updateTipAndFinalBill();
+		
+	}
+	
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
